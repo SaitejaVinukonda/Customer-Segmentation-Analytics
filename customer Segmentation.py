@@ -1,119 +1,84 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[8]:
-
-
+import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_samples, silhouette_score
+from sklearn.metrics import silhouette_score
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 # Load the dataset
-customer_data = pd.read_csv("Mall_Customers.csv")
+st.title("Customer Segmentation using K-Means Clustering")
 
-# Display basic data information
-print(customer_data.head())
-print(customer_data.info())
-print(customer_data.describe())
+@st.cache_data
+def load_data():
+    return pd.read_csv("Mall_Customers.csv")
 
-# Summary statistics
-print("Summary of Age:", customer_data['Age'].describe())
-print("Standard Deviation of Age:", customer_data['Age'].std())
-print("Summary of Annual Income:", customer_data['Annual Income (k$)'].describe())
-print("Standard Deviation of Annual Income:", customer_data['Annual Income (k$)'].std())
-print("Summary of Spending Score:", customer_data['Spending Score (1-100)'].describe())
-print("Standard Deviation of Spending Score:", customer_data['Spending Score (1-100)'].std())
+customer_data = load_data()
 
-# Visualization: Gender distribution
+# Display data
+st.subheader("Dataset Preview")
+st.write(customer_data.head())
+
+st.subheader("Basic Information")
+st.write(customer_data.info())
+
+st.subheader("Summary Statistics")
+st.write(customer_data.describe())
+
+# Visualization: Gender Distribution
+st.subheader("Gender Distribution")
 gender_counts = customer_data['Gender'].value_counts()
-plt.figure(figsize=(10, 6))
-gender_counts.plot(kind='bar', color=['skyblue', 'pink'])
-plt.title("Gender Comparison")
-plt.xlabel("Gender")
-plt.ylabel("Count")
-plt.xticks(rotation=0)
-plt.show()
+fig, ax = plt.subplots()
+gender_counts.plot(kind='bar', color=['skyblue', 'pink'], ax=ax)
+ax.set_title("Gender Comparison")
+ax.set_xlabel("Gender")
+ax.set_ylabel("Count")
+st.pyplot(fig)
 
-# Pie chart for gender ratio
-plt.figure(figsize=(8, 8))
-plt.pie(gender_counts, labels=gender_counts.index, autopct='%1.1f%%', colors=['skyblue', 'pink'])
-plt.title("Gender Ratio")
-plt.show()
+# Age Distribution
+st.subheader("Age Distribution")
+fig, ax = plt.subplots()
+sns.histplot(customer_data['Age'], kde=True, bins=10, color='blue', ax=ax)
+ax.set_xlabel("Age Class")
+ax.set_ylabel("Frequency")
+st.pyplot(fig)
 
-# Visualization: Age distribution
-plt.figure(figsize=(10, 6))
-sns.histplot(customer_data['Age'], kde=False, bins=10, color='blue')
-plt.title("Age Distribution")
-plt.xlabel("Age Class")
-plt.ylabel("Frequency")
-plt.show()
+# Annual Income Distribution
+st.subheader("Annual Income Distribution")
+fig, ax = plt.subplots()
+sns.histplot(customer_data['Annual Income (k$)'], kde=True, bins=10, color='purple', ax=ax)
+st.pyplot(fig)
 
-# Boxplot for Age
-plt.figure(figsize=(8, 6))
-sns.boxplot(y=customer_data['Age'], color='#ff0066')
-plt.title("Boxplot for Age")
-plt.show()
-
-# Annual Income Analysis
-plt.figure(figsize=(10, 6))
-sns.histplot(customer_data['Annual Income (k$)'], kde=False, bins=10, color='#660033')
-plt.title("Annual Income Distribution")
-plt.xlabel("Annual Income (k$)")
-plt.ylabel("Frequency")
-plt.show()
-
-# Density plot for Annual Income
-plt.figure(figsize=(10, 6))
-sns.kdeplot(customer_data['Annual Income (k$)'], shade=True, color='yellow')
-plt.title("Density Plot for Annual Income")
-plt.xlabel("Annual Income (k$)")
-plt.ylabel("Density")
-plt.show()
-
-# Spending Score Analysis
-plt.figure(figsize=(10, 6))
-sns.boxplot(x=customer_data['Spending Score (1-100)'], color='#990000')
-plt.title("Boxplot for Spending Score")
-plt.show()
-
-plt.figure(figsize=(10, 6))
-sns.histplot(customer_data['Spending Score (1-100)'], kde=False, bins=10, color='#6600cc')
-plt.title("Spending Score Distribution")
-plt.xlabel("Spending Score Class")
-plt.ylabel("Frequency")
-plt.show()
+# Spending Score Distribution
+st.subheader("Spending Score Distribution")
+fig, ax = plt.subplots()
+sns.histplot(customer_data['Spending Score (1-100)'], kde=True, bins=10, color='green', ax=ax)
+st.pyplot(fig)
 
 # K-means clustering
 X = customer_data.iloc[:, [3, 4]].values
 
-# Finding the optimal number of clusters using the Elbow Method
+st.subheader("Optimal Cluster Selection using Elbow Method")
 wcss = []
 for i in range(1, 11):
     kmeans = KMeans(n_clusters=i, init='k-means++', max_iter=300, n_init=10, random_state=123)
     kmeans.fit(X)
     wcss.append(kmeans.inertia_)
 
-plt.figure(figsize=(10, 6))
-plt.plot(range(1, 11), wcss, marker='o')
-plt.title("Elbow Method")
-plt.xlabel("Number of clusters")
-plt.ylabel("WCSS")
-plt.show()
+fig, ax = plt.subplots()
+ax.plot(range(1, 11), wcss, marker='o')
+ax.set_title("Elbow Method")
+ax.set_xlabel("Number of clusters")
+ax.set_ylabel("WCSS")
+st.pyplot(fig)
 
-# Using the silhouette score
-for n_clusters in range(2, 11):
-    kmeans = KMeans(n_clusters=n_clusters, random_state=123)
-    cluster_labels = kmeans.fit_predict(X)
-    silhouette_avg = silhouette_score(X, cluster_labels)
-    print(f"For n_clusters={n_clusters}, the silhouette score is {silhouette_avg:.4f}")
+# User input for number of clusters
+k = st.slider("Select the number of clusters:", min_value=2, max_value=10, value=6, step=1)
 
-# Final clustering with optimal K (e.g., K=6)
-kmeans = KMeans(n_clusters=6, init='k-means++', max_iter=300, n_init=50, random_state=125)
+# Apply KMeans clustering
+kmeans = KMeans(n_clusters=k, init='k-means++', max_iter=300, n_init=50, random_state=125)
 customer_data['Cluster'] = kmeans.fit_predict(X)
 
 # PCA for visualization
@@ -125,23 +90,12 @@ customer_data['PC1'] = principal_components[:, 0]
 customer_data['PC2'] = principal_components[:, 1]
 
 # Scatter plot for clusters
-plt.figure(figsize=(10, 6))
-sns.scatterplot(data=customer_data, x='PC1', y='PC2', hue='Cluster', palette='viridis', s=100)
-plt.title("Clusters Visualization Using PCA")
-plt.xlabel("Principal Component 1")
-plt.ylabel("Principal Component 2")
-plt.legend(title="Cluster")
-plt.show()
+st.subheader("Cluster Visualization Using PCA")
+fig, ax = plt.subplots()
+sns.scatterplot(data=customer_data, x='PC1', y='PC2', hue='Cluster', palette='viridis', s=100, ax=ax)
+ax.set_title("Clusters Visualization Using PCA")
+st.pyplot(fig)
 
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
+# Display cluster summary
+st.subheader("Clustered Data Preview")
+st.write(customer_data.head())
