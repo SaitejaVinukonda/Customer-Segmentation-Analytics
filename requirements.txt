@@ -1,5 +1,7 @@
+python
 pandas
 matplotlib
 seaborn
 scikit-learn
 streamlit
+power bi
