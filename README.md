@@ -1,5 +1,4 @@
-
-# 🎯 Customer Segmentation using K-Means Clustering
+ # 🎯 Customer Segmentation Analysis using K-Means Clustering & Dash Board
 This project aims to segment mall customers into distinct groups based on their demographic and spending behavior using **unsupervised machine learning**. The insights derived from this analysis help businesses target specific customer groups with tailored marketing strategies, thereby increasing customer satisfaction and revenue.
 ## 🧠 Objective
 To perform **customer segmentation** using the **Mall Customer Dataset**, enabling a retail store to understand different types of customers based on attributes such as:
@@ -48,13 +47,13 @@ The dataset (`Mall_Customers.csv`) typically includes the following features:
 - **Power BI** (for business dashboard)
 ## 🚀 How to Run the Code
 1. Clone the repository:
-git clone https://github.com/your-username/customer-segmentation-kmeans.git
+git clone https://github.com/SaitejaVinukonda/customer-segmentation-Analytics
 cd customer-segmentation-kmeans
 2. Install required packages:
 pip install -r requirements.txt
 3. Run the script
 python customer_segmentation.py
-4. (Optional) Use the generated `segmented_customers.csv` in Power BI or Streamlit for visualization.
+4. (Optional) Use the generated segmented_customers.csv in Power BI or Streamlit for visualization.
 ## 📈 Sample Output
 - Cluster 0: Young high-income high-spending customers
 - Cluster 1: Older customers with low income and low spending
